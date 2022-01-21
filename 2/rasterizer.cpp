@@ -204,5 +204,3 @@ void rst::rasterizer::set_pixel(const Eigen::Vector3f& point, const Eigen::Vecto
     frame_buf[ind] = color;
 
 }
-
-// clang-format on
