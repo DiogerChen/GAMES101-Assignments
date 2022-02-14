@@ -136,10 +136,10 @@ void rst::rasterizer::rasterize_triangle(const Triangle& t) {
     // z_interpolated *= w_reciprocal;
     // TODO : set the current pixel (use the set_pixel function) to the color of the triangle (use getColor function) if it should be painted.
 
-    float max_x = std::fmax(std::fmax(t.v[0].x(), t.v[1].x()), t.v[2].x());
-    float min_x = std::fmin(std::fmin(t.v[0].x(), t.v[1].x()), t.v[2].x());
-    float max_y = std::fmax(std::fmax(t.v[0].y(), t.v[1].y()), t.v[2].y());
-    float min_y = std::fmin(std::fmin(t.v[0].y(), t.v[1].y()), t.v[2].y());
+    float max_x = std::fmax(std::fmax(v[0].x(), v[1].x()), v[2].x());
+    float min_x = std::fmin(std::fmin(v[0].x(), v[1].x()), v[2].x());
+    float max_y = std::fmax(std::fmax(v[0].y(), v[1].y()), v[2].y());
+    float min_y = std::fmin(std::fmin(v[0].y(), v[1].y()), v[2].y());
 
     for (size_t x = min_x; x < max_x; ++x)
     {
