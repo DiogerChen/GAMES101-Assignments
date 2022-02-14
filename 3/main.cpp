@@ -100,7 +100,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
-
+        return_color = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -153,27 +153,28 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
     Eigen::Vector3f point = payload.view_pos;
     Eigen::Vector3f normal = payload.normal;
 
+    Eigen::Vector3f view_dir = (eye_pos - point).normalized();
     Eigen::Vector3f result_color = {0, 0, 0};
     for (auto& light : lights)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular* 
         // components are. Then, accumulate that result on the *result_color* object.
-        
-        Eigen::Vector3f l = (light.position - point).normalized();
-        Eigen::Vector3f v = (eye_pos - point).normalized();
-        Eigen::Vector3f h = (l + v).normalized();    // For Specular
+        Eigen::Vector3f intensity = light.intensity / (light.position - point).squaredNorm();
+        Eigen::Vector3f light_dir = (light.position - point).normalized();
+        Eigen::Vector3f h = (light_dir + view_dir).normalized();    // For Specular
 
         Eigen::Vector3f ambient = ka;
-        Eigen::Vector3f diffuse = kd * fmax(normal.dot(l), 0.0);
+        Eigen::Vector3f diffuse = kd * fmax(normal.dot(light_dir), 0.0f);
         Eigen::Vector3f specular = ks * pow(fmax(normal.dot(h), 0.0f), p);
-        for(int i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            result_color[i] += light.intensity[i] * (ambient[i] + diffuse[i] + specular[i]);
+            ambient[i] *= amb_light_intensity[i];
+            diffuse[i] *= intensity[i];
+            specular[i] *= intensity[i];
         }
+        result_color += ambient + diffuse + specular;
     }
-    cout << result_color[0] << " " << result_color[1] << " " << result_color[2] << endl;
-    return Eigen::Vector3f(0.0, 0.0, 0.0);
-    //return result_color * 255.f;
+    return result_color * 255.f;
 }
 
 
@@ -276,10 +277,10 @@ int main(int argc, const char** argv)
 
     std::string filename = "output.png";
     objl::Loader Loader;
-    std::string obj_path = "../models/spot/";
+    std::string obj_path = "./models/spot/";
 
     // Load .obj File
-    bool loadout = Loader.LoadFile("../models/spot/spot_triangulated_good.obj");
+    bool loadout = Loader.LoadFile("./models/spot/spot_triangulated_good.obj");
     for(auto mesh:Loader.LoadedMeshes)
     {
         for(int i=0;i<mesh.Vertices.size();i+=3)
